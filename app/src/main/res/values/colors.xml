@@ -2,24 +2,13 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-
-    <color name="light_background">#FFFFFFFF</color>
-    <color name="light_text">#FF000000</color>
-    <color name="light_comment">#FF8C8C8C</color>
-    <color name="light_error">#FFF50000</color>
-    <color name="light_keyword">#FF0033b3</color>
-    <color name="light_function">#FF00627A</color>
-    <color name="light_annotation">#FF9E880D</color>
-    <color name="light_string">#FF067D17</color>
-    <color name="light_variable">#FF871094</color>
-
-    <color name="dark_background">#FF2B2B2B</color>
-    <color name="dark_text">#FFA9B7C6</color>
-    <color name="dark_comment">#FF808080</color>
-    <color name="dark_error">#FFBC3f3C</color>
-    <color name="dark_keyword">#FFCC7832</color>
-    <color name="dark_function">#FFFFC66D</color>
-    <color name="dark_annotation">#FFBBB529</color>
-    <color name="dark_string">#FF6A8759</color>
-    <color name="dark_variable">#FF9876AA</color>
+    <color name="background">#FFFFFFFF</color>
+    <color name="text">#FF000000</color>
+    <color name="comment">#FF8C8C8C</color>
+    <color name="variable">#FF871094</color>
+    <color name="keyword">#FF0033b3</color>
+    <color name="function">#FF00627A</color>
+    <color name="error">#FFF50000</color>
+    <color name="annotation">#FF9E880D</color>
+    <color name="string">#FF067D17</color>
 </resources>
