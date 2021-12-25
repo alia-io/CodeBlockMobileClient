@@ -1,8 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Theme.CodeBlockMobileClient" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- primary: notification bar, status bar/app bar, bottom bar -->
+        <!-- secondary: button background, diagram, checkbox selection, slider/seek bar, floating action button -->
         <item name="backgroundColor">@color/background</item>
         <item name="android:textColor">@color/text</item>
+        <item name="colorPrimary">@color/function</item>
+        <item name="colorPrimaryVariant">@color/keyword</item>
+        <item name="colorPrimaryDark">@color/variable</item>
+        <item name="colorSecondary">@color/annotation</item>
+        <item name="colorSecondaryVariant">@color/error</item>
+        <item name="colorAccent">@color/string</item>
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
     </style>
 </resources>

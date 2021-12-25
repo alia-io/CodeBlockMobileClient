@@ -5,10 +5,10 @@
     <color name="background">#FFFFFFFF</color>
     <color name="text">#FF000000</color>
     <color name="comment">#FF8C8C8C</color>
-    <color name="error">#FFF50000</color>
+    <color name="variable">#FF871094</color>
     <color name="keyword">#FF0033b3</color>
     <color name="function">#FF00627A</color>
+    <color name="error">#FFF50000</color>
     <color name="annotation">#FF9E880D</color>
     <color name="string">#FF067D17</color>
-    <color name="variable">#FF871094</color>
 </resources>
