@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="background">#FF2B2B2B</color>
+    <color name="text">#FFA9B7C6</color>
+    <color name="comment">#FF808080</color>
+    <color name="error">#FFBC3f3C</color>
+    <color name="keyword">#FFCC7832</color>
+    <color name="function">#FFFFC66D</color>
+    <color name="annotation">#FFBBB529</color>
+    <color name="string">#FF6A8759</color>
+    <color name="variable">#FF9876AA</color>
+</resources>
