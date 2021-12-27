@@ -1,0 +1,24 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base application theme -->
+    <style name="Theme.CodeBlockMobileClient" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="android:windowBackground">@color/background</item>
+        <!--<item name="android:textColor">@color/text</item>-->
+        <item name="colorPrimary">@color/keyword</item>
+        <item name="colorPrimaryVariant">@color/function</item>
+        <item name="colorPrimaryDark">@color/variable</item>
+        <item name="colorSecondary">@color/annotation</item>
+        <item name="colorSecondaryVariant">@color/error</item>
+        <item name="colorAccent">@color/string</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/comment</item>
+        <item name="actionBarStyle">@style/Theme.CodeBlockMobileClient.ActionBar</item>
+    </style>
+
+    <!-- Action bar style -->
+    <style name="Theme.CodeBlockMobileClient.ActionBar"
+            parent="@style/Widget.AppCompat.ActionBar">
+        <item name="background">?attr/colorPrimary</item>
+    </style>
+
+</resources>
