@@ -3,23 +3,21 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:padding="10dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".SignupLoginActivity">
 
     <LinearLayout
         android:gravity="center"
-        android:layout_marginBottom="50dp"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent">
         <TextView
             android:id="@+id/instruction"
-            android:text="@string/signup"
             android:textSize="20sp"
             android:layout_marginBottom="10dp"
             android:layout_width="wrap_content"
@@ -46,6 +44,7 @@
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/confirm_password_layout"
             android:hint="@string/confirm_password_hint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -56,36 +55,37 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
-        <!--<Button
-            android:id="@+id/sign_up_login_button"
-            android:text="@string/sign_up_button"
-            android:onClick="signUpOrLogin"
+        <Button
+            android:id="@+id/signup_login_button"
+            android:onClick="onClickSubmit"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
             tools:ignore="UsingOnClickInXml"
-            android:layout_marginTop="20dp"
-            style="@style/DogWalker.Button" />-->
+            android:layout_marginTop="10dp" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/bottom_layout"
         android:gravity="center"
-        android:orientation="horizontal"
-        android:layout_margin="10dp"
+        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">
-        <!--<TextView
-            android:text="@string/go_to_login"
-            android:textSize="18sp"
-            android:layout_marginEnd="10dp"
+        <TextView
+            android:id="@+id/toggle_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <Button
-            android:text="@string/login_button"
-            android:onClick="goToLogin"
-            style="@style/DogWalker.Button"
-            tools:ignore="UsingOnClickInXml" />-->
+            android:id="@+id/toggle_button"
+            android:onClick="onClickToggle"
+            android:backgroundTint="@color/comment"
+            android:paddingTop="1dp"
+            android:paddingBottom="1dp"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            tools:ignore="UsingOnClickInXml" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
