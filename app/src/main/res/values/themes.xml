@@ -12,44 +12,27 @@
         <item name="colorAccent">@color/string</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:statusBarColor" tools:targetApi="l">@color/comment</item>
-        <!--<item name="actionBarStyle">@style/ActionBar</item>
-        <item name="android:actionBarStyle">@style/ActionBar</item>-->
-
-        <!--<item name="android:windowTitleBackgroundStyle" tools:targetApi="l">?attr/colorPrimaryDark</item>
-
-        <item name="android:statusBarColor" tools:targetApi="l">@color/dark_maroon</item>
-        <item name="android:windowBackground">@color/lilac_gray</item>
-        <item name="android:windowActivityTransitions">true</item>
-        <item name="android:itemBackground">@color/light_rose</item>
-
-        <style name="BaseTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-            <item name="actionBarStyle">@style/ActionBar</item>
-            <item name="android:actionBarStyle">@style/ActionBar</item>
-        </style>
-
-        <style name="ActionBar" parent="@style/Widget.AppCompat.Light.ActionBar">
-            <item name="android:background">@color/orange </item>
-            <item name="background">@color/orange </item>
-            <item name="android:titleTextStyle">@style/ActionBar.Text</item>
-            <item name="titleTextStyle">@style/ActionBar.Text</item>
-        </style>
-
-        <style name="ActionBar.Text" parent="@android:style/TextAppearance.Medium">
-            <item name="android:textColor">@color/orange</item>
-        </style>-->
+        <item name="actionBarStyle">@style/Theme.CodeBlockMobileClient.ActionBar</item>
+        <item name="android:itemBackground">?attr/colorPrimaryVariant</item>
+        <item name="textInputStyle">@style/Theme.CodeBlockMobileClient.TextInputLayout</item>
     </style>
 
     <!-- Action bar style -->
-    <!--<style name="ActionBar" parent="ThemeOverlay.MaterialComponents.ActionBar">
-        <item name="android:background">?attr/colorPrimaryDark</item>
-        <item name="background">?attr/colorPrimaryDark</item>
-        <item name="android:titleTextStyle">@style/ActionBar.Text</item>
-        <item name="titleTextStyle">@style/ActionBar.Text</item>
-    </style>-->
+    <style name="Theme.CodeBlockMobileClient.ActionBar" parent="@style/Widget.AppCompat.ActionBar">
+        <item name="background">?attr/colorPrimary</item>
+    </style>
 
-    <!-- Action bar title text style -->
-    <!--<style name="ActionBar.Text" parent="@android:style/TextAppearance.Medium">
-        <item name="android:textColor">@color/white</item>
-    </style>-->
+    <!-- Text input layout style -->
+    <style name="Theme.CodeBlockMobileClient.TextInputLayout" parent="Widget.Design.TextInputLayout">
+        <item name="android:background">@drawable/text_input_layout_style</item>
+        <item name="android:layout_marginLeft">20dp</item>
+        <item name="android:layout_marginRight">20dp</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingBottom">5dp</item>
+        <item name="android:paddingLeft">20dp</item>
+        <item name="android:paddingRight">20dp</item>
+    </style>
 
 </resources>
