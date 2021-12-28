@@ -1,6 +1,8 @@
 <resources>
-    <string name="app_name">Code Block</string>
-    <string name="sign_up">Sign Up</string>
+    <string name="app_name"><b>Code Block</b></string>
+    <string name="signup">Create a new account:</string>
+    <string name="signup_keyword"> new </string>
+    <string name="login">Login to your account:</string>
     <string name="email_hint">Email Address</string>
     <string name="password_hint">Password</string>
     <string name="confirm_password_hint">Confirm Password</string>
