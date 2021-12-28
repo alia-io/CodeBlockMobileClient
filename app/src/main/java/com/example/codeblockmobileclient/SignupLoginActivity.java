@@ -1,6 +1,7 @@
 package com.example.codeblockmobileclient;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.os.Bundle;
 import android.text.Spannable;
@@ -28,8 +29,8 @@ public class SignupLoginActivity extends AppCompatActivity {
         int endIndex = startIndex + signupKeyword.length();
 
         if (startIndex >= 0) {
-            spannable.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.keyword)),
-                    startIndex, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new ForegroundColorSpan(ContextCompat.getColor(getApplicationContext(),
+                    R.color.keyword)), startIndex, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         instructionView.setText(spannable);
     }
