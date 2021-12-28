@@ -22,6 +22,7 @@ public class SignupLoginActivity extends AppCompatActivity {
     private ActivityOption currentOption;
 
     private TextView instructionView;
+    private TextView errorView;
     private TextInputLayout confirmPasswordLayout;
 
     private TextInputEditText emailInput;
@@ -37,6 +38,7 @@ public class SignupLoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup_login);
         instructionView = findViewById(R.id.instruction);
+        errorView = findViewById(R.id.error_text);
         confirmPasswordLayout = findViewById(R.id.confirm_password_layout);
         emailInput = findViewById(R.id.email_address);
         passwordInput = findViewById(R.id.password);
@@ -62,6 +64,8 @@ public class SignupLoginActivity extends AppCompatActivity {
         }
 
         instructionView.setText(spannable);
+        errorView.setText("");
+        errorView.setVisibility(View.GONE);
         confirmPasswordLayout.setVisibility(View.VISIBLE);
         submitButton.setText(getResources().getString(R.string.signup_button));
         toggleView.setText(getResources().getString(R.string.switch_to_login));
@@ -84,6 +88,8 @@ public class SignupLoginActivity extends AppCompatActivity {
         }
 
         instructionView.setText(getResources().getString(R.string.login));
+        errorView.setText("");
+        errorView.setVisibility(View.GONE);
         confirmPasswordInput.setText("");
         confirmPasswordLayout.setVisibility(View.GONE);
         submitButton.setText(getResources().getString(R.string.login_button));
@@ -102,12 +108,15 @@ public class SignupLoginActivity extends AppCompatActivity {
             if (password.equals(confirmPassword)) {
                 // TODO: encrypt, send to server (request new user)
             } else {
-                // TODO: error text
+                errorView.setText(getResources().getString(R.string.error_password_match));
+                errorView.setVisibility(View.VISIBLE);
             }
         } else if (currentOption == ActivityOption.LOGIN) {
             // TODO: encrypt, send to server (request login)
         }
     }
+
+    // TODO: receive server response
 
     public void onClickToggle(View view) {
         if (currentOption == ActivityOption.SIGNUP) setToLogin();
