@@ -3,10 +3,12 @@ package com.example.codeblockmobileclient;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.widget.TextView;
 
 public class SignupLoginActivity extends AppCompatActivity {
@@ -31,6 +33,7 @@ public class SignupLoginActivity extends AppCompatActivity {
         if (startIndex >= 0) {
             spannable.setSpan(new ForegroundColorSpan(ContextCompat.getColor(getApplicationContext(),
                     R.color.keyword)), startIndex, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new StyleSpan(Typeface.BOLD), startIndex, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         instructionView.setText(spannable);
     }
