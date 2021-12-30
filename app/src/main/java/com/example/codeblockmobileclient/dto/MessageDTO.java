@@ -11,9 +11,4 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MessageDTO implements Serializable {
     String body;
-
-    @Override
-    public String toString() {
-        return "MessageDTO{body=" + body + "}";
-    }
 }

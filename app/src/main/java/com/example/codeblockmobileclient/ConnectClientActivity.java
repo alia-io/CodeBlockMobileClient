@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import lombok.SneakyThrows;
+
 public class ConnectClientActivity extends AppCompatActivity {
 
     private WebSocketMessageClient webSocketMessageClient;
@@ -47,10 +49,23 @@ public class ConnectClientActivity extends AppCompatActivity {
                 //webSocketMessageClient.send(msg);
             }
 
+            @SneakyThrows
             @Override
             public void onTextReceived(String message) {
-                Log.i("WebSocket", "String message received");
-
+                Log.i("WebSocket", "String message received: " + message);
+                ObjectMapper mapper = new ObjectMapper();
+                MessageDTO messageDTO = mapper.readValue(message, MessageDTO.class);
+                Log.i("WebSocket", "Converted message body: " + messageDTO.getBody());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try{
+                            tv.setText(messageDTO.getBody());
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
 
             @Override
@@ -86,7 +101,7 @@ public class ConnectClientActivity extends AppCompatActivity {
 
     public void onClickSendMessage(View view) throws JsonProcessingException {
         Log.i("WebSocket", "Button was clicked");
-        MessageDTO messageDTO = new MessageDTO("HELLO CAN YOU HEAR ME (from MessageDTO)");
+        MessageDTO messageDTO = new MessageDTO(7, "HELLO CAN YOU HEAR ME (from MessageDTO)");
         ObjectMapper mapper = new ObjectMapper();
         String msg = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(messageDTO);
         webSocketMessageClient.send(msg);
