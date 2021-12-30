@@ -5,26 +5,28 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
+
+import com.example.codeblockmobileclient.dto.MessageDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import lombok.SneakyThrows;
 import tech.gusavila92.websocketclient.WebSocketClient;
 
 public class ConnectClientActivity extends AppCompatActivity {
 
-    private WebSocketClient webSocketClient;
+    private WebSocketClient webSocketMessageClient;
     private TextView tv;
-    private Button button;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connect_client);
         tv = findViewById(R.id.tv);
-        button = findViewById(R.id.button);
         createWebSocketClient();
     }
 
@@ -39,22 +41,25 @@ public class ConnectClientActivity extends AppCompatActivity {
             return;
         }
 
-        webSocketClient = new WebSocketClient(uri) {
+        webSocketMessageClient = new WebSocketClient(uri) {
+
             @Override
             public void onOpen() {
                 Log.i("WebSocket", "Session is starting");
-                webSocketClient.send("Hello World!");
             }
 
+            @SneakyThrows
             @Override
-            public void onTextReceived(String s) {
-                Log.i("WebSocket", "Message received");
-                final String message = s;
+            public void onTextReceived(String message) {
+                Log.i("WebSocket", "String message received: " + message);
+                ObjectMapper mapper = new ObjectMapper();
+                MessageDTO messageDTO = mapper.readValue(message, MessageDTO.class);
+                Log.i("WebSocket", "Converted message body: " + messageDTO.getBody());
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try{
-                            tv.setText(message);
+                            tv.setText(messageDTO.getBody());
                         } catch (Exception e){
                             e.printStackTrace();
                         }
@@ -65,23 +70,25 @@ public class ConnectClientActivity extends AppCompatActivity {
             @Override public void onBinaryReceived(byte[] data) { }
             @Override public void onPingReceived(byte[] data) { }
             @Override public void onPongReceived(byte[] data) { }
-            @Override public void onException(Exception e) { System.out.println(e.getMessage()); }
+            @Override public void onException(Exception e) { }
 
             @Override
             public void onCloseReceived() {
                 Log.i("WebSocket", "Closed ");
-                System.out.println("onCloseReceived");
             }
         };
 
-        webSocketClient.setConnectTimeout(10000);
-        webSocketClient.setReadTimeout(60000);
-        webSocketClient.enableAutomaticReconnection(5000);
-        webSocketClient.connect();
+        webSocketMessageClient.setConnectTimeout(10000);
+        webSocketMessageClient.setReadTimeout(60000);
+        webSocketMessageClient.enableAutomaticReconnection(5000);
+        webSocketMessageClient.connect();
     }
 
-    public void onClickSendMessage(View view) {
+    public void onClickSendMessage(View view) throws JsonProcessingException {
         Log.i("WebSocket", "Button was clicked");
-        webSocketClient.send("HELLO CAN YOU HEAR ME ?????");
+        MessageDTO messageDTO = new MessageDTO(7, "HELLO CAN YOU HEAR ME (from MessageDTO)");
+        ObjectMapper mapper = new ObjectMapper();
+        String msg = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(messageDTO);
+        webSocketMessageClient.send(msg);
     }
 }
