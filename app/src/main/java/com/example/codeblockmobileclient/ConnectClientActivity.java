@@ -78,6 +78,7 @@ public class ConnectClientActivity extends AppCompatActivity {
 
     public void onClickSendMessage(View view) {
         Log.i("WebSocket", "Button was clicked");
-        webSocketMessageClient.send("HELLO CAN YOU HEAR ME ?????");
+        MessageDTO messageDTO = new MessageDTO("HELLO CAN YOU HEAR ME (from MessageDTO)");
+        webSocketMessageClient.send(messageDTO.toString());
     }
 }
