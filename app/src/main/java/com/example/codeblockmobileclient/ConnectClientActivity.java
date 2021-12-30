@@ -46,9 +46,9 @@ public class ConnectClientActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onMessageDTOReceived(MessageDTO message) {
+            public void onMessageDTOReceived(Object message) {
                 Log.i("WebSocket", "Message received");
-                final String body = message.getBody();
+                final String body = message.toString();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

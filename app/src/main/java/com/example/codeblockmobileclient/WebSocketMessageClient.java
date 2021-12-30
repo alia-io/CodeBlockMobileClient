@@ -30,7 +30,7 @@ public abstract class WebSocketMessageClient extends WebSocketClient {
      *
      * @param message The binary message received
      */
-    public abstract void onMessageDTOReceived(MessageDTO message);
+    public abstract void onMessageDTOReceived(Object message);
 
     public void send(MessageDTO message) {
         byte[] data = SerializationUtils.serialize(message);
