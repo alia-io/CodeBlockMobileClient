@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.codeblockmobileclient.dto.MessageDTO;
@@ -17,14 +16,12 @@ public class ConnectClientActivity extends AppCompatActivity {
 
     private WebSocketMessageClient webSocketMessageClient;
     private TextView tv;
-    private Button button;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connect_client);
         tv = findViewById(R.id.tv);
-        button = findViewById(R.id.button);
         createWebSocketClient();
     }
 
