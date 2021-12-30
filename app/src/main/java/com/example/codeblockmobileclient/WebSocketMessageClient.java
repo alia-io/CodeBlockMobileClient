@@ -1,5 +1,7 @@
 package com.example.codeblockmobileclient;
 
+import android.util.Log;
+
 import com.example.codeblockmobileclient.dto.MessageDTO;
 
 import org.apache.commons.lang3.SerializationUtils;
@@ -21,6 +23,7 @@ public abstract class WebSocketMessageClient extends WebSocketClient {
 
     @Override
     public void onBinaryReceived(byte[] data) {
+        Log.i("WebSocket", "byte array received");
         MessageDTO message = SerializationUtils.deserialize(data);
         onMessageDTOReceived(message);
     }
