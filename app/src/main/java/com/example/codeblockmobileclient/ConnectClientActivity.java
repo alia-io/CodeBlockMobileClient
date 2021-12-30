@@ -8,6 +8,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.codeblockmobileclient.dto.MessageDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -46,6 +48,12 @@ public class ConnectClientActivity extends AppCompatActivity {
             }
 
             @Override
+            public void onTextReceived(String message) {
+                Log.i("WebSocket", "String message received");
+
+            }
+
+            @Override
             public void onMessageDTOReceived(Object message) {
                 Log.i("WebSocket", "Message received");
                 MessageDTO messageDTO = (MessageDTO) message;
@@ -76,9 +84,11 @@ public class ConnectClientActivity extends AppCompatActivity {
         webSocketMessageClient.connect();
     }
 
-    public void onClickSendMessage(View view) {
+    public void onClickSendMessage(View view) throws JsonProcessingException {
         Log.i("WebSocket", "Button was clicked");
         MessageDTO messageDTO = new MessageDTO("HELLO CAN YOU HEAR ME (from MessageDTO)");
-        webSocketMessageClient.send(messageDTO.toString());
+        ObjectMapper mapper = new ObjectMapper();
+        String msg = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(messageDTO);
+        webSocketMessageClient.send(msg);
     }
 }
