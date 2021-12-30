@@ -36,4 +36,9 @@ public abstract class WebSocketMessageClient extends WebSocketClient {
         byte[] data = SerializationUtils.serialize(message);
         send(data);
     }
+
+    @Override public void onTextReceived(String message) { }
+    @Override public void onPingReceived(byte[] data) { }
+    @Override public void onPongReceived(byte[] data) { }
+    @Override public void onException(Exception e) { }
 }

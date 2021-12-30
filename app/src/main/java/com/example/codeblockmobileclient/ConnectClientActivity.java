@@ -64,11 +64,6 @@ public class ConnectClientActivity extends AppCompatActivity {
                 });
             }
 
-            @Override public void onTextReceived(String message) { }
-            @Override public void onPingReceived(byte[] data) { }
-            @Override public void onPongReceived(byte[] data) { }
-            @Override public void onException(Exception e) { }
-
             @Override
             public void onCloseReceived() {
                 Log.i("WebSocket", "Closed ");
