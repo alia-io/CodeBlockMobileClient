@@ -8,14 +8,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.example.codeblockmobileclient.dto.MessageDTO;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import tech.gusavila92.websocketclient.WebSocketClient;
-
 public class ConnectClientActivity extends AppCompatActivity {
 
-    private WebSocketClient webSocketClient;
+    private WebSocketMessageClient webSocketMessageClient;
     private TextView tv;
     private Button button;
 
@@ -39,22 +39,24 @@ public class ConnectClientActivity extends AppCompatActivity {
             return;
         }
 
-        webSocketClient = new WebSocketClient(uri) {
+        webSocketMessageClient = new WebSocketMessageClient(uri) {
+
             @Override
             public void onOpen() {
                 Log.i("WebSocket", "Session is starting");
-                webSocketClient.send("Hello World!");
+                MessageDTO msg = new MessageDTO("Hello World!");
+                webSocketMessageClient.send(msg);
             }
 
             @Override
-            public void onTextReceived(String s) {
+            public void onMessageDTOReceived(MessageDTO message) {
                 Log.i("WebSocket", "Message received");
-                final String message = s;
+                final String body = message.getBody();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try{
-                            tv.setText(message);
+                            tv.setText(body);
                         } catch (Exception e){
                             e.printStackTrace();
                         }
@@ -62,10 +64,10 @@ public class ConnectClientActivity extends AppCompatActivity {
                 });
             }
 
-            @Override public void onBinaryReceived(byte[] data) { }
+            @Override public void onTextReceived(String message) { }
             @Override public void onPingReceived(byte[] data) { }
             @Override public void onPongReceived(byte[] data) { }
-            @Override public void onException(Exception e) { System.out.println(e.getMessage()); }
+            @Override public void onException(Exception e) { }
 
             @Override
             public void onCloseReceived() {
@@ -74,14 +76,14 @@ public class ConnectClientActivity extends AppCompatActivity {
             }
         };
 
-        webSocketClient.setConnectTimeout(10000);
-        webSocketClient.setReadTimeout(60000);
-        webSocketClient.enableAutomaticReconnection(5000);
-        webSocketClient.connect();
+        webSocketMessageClient.setConnectTimeout(10000);
+        webSocketMessageClient.setReadTimeout(60000);
+        webSocketMessageClient.enableAutomaticReconnection(5000);
+        webSocketMessageClient.connect();
     }
 
     public void onClickSendMessage(View view) {
         Log.i("WebSocket", "Button was clicked");
-        webSocketClient.send("HELLO CAN YOU HEAR ME ?????");
+        webSocketMessageClient.send("HELLO CAN YOU HEAR ME ?????");
     }
 }
