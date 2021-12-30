@@ -41,8 +41,8 @@ public class ConnectClientActivity extends AppCompatActivity {
             @Override
             public void onOpen() {
                 Log.i("WebSocket", "Session is starting");
-                MessageDTO msg = new MessageDTO("Hello World!");
-                webSocketMessageClient.send(msg);
+                //MessageDTO msg = new MessageDTO("Hello World!");
+                //webSocketMessageClient.send(msg);
             }
 
             @Override
