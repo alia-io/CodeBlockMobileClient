@@ -15,10 +15,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import lombok.SneakyThrows;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 public class ConnectClientActivity extends AppCompatActivity {
 
-    private WebSocketMessageClient webSocketMessageClient;
+    private WebSocketClient webSocketMessageClient;
     private TextView tv;
 
     @Override
@@ -40,13 +41,11 @@ public class ConnectClientActivity extends AppCompatActivity {
             return;
         }
 
-        webSocketMessageClient = new WebSocketMessageClient(uri) {
+        webSocketMessageClient = new WebSocketClient(uri) {
 
             @Override
             public void onOpen() {
                 Log.i("WebSocket", "Session is starting");
-                //MessageDTO msg = new MessageDTO("Hello World!");
-                //webSocketMessageClient.send(msg);
             }
 
             @SneakyThrows
@@ -68,28 +67,14 @@ public class ConnectClientActivity extends AppCompatActivity {
                 });
             }
 
-            @Override
-            public void onMessageDTOReceived(Object message) {
-                Log.i("WebSocket", "Message received");
-                MessageDTO messageDTO = (MessageDTO) message;
-                final String body = messageDTO.getBody();
-                Log.i("WebSocket", "Message body = " + body);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try{
-                            tv.setText(body);
-                        } catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    }
-                });
-            }
+            @Override public void onBinaryReceived(byte[] data) { }
+            @Override public void onPingReceived(byte[] data) { }
+            @Override public void onPongReceived(byte[] data) { }
+            @Override public void onException(Exception e) { }
 
             @Override
             public void onCloseReceived() {
                 Log.i("WebSocket", "Closed ");
-                System.out.println("onCloseReceived");
             }
         };
 
