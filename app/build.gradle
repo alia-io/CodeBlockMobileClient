@@ -35,6 +35,7 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.6'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.13.1'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
+    implementation "androidx.core:core:1.7.0"
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
     testImplementation 'junit:junit:4.+'

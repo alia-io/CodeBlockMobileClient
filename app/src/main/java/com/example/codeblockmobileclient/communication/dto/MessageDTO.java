@@ -1,4 +1,4 @@
-package com.example.codeblockmobileclient.dto;
+package com.example.codeblockmobileclient.communication.dto;
 
 import java.io.Serializable;
 

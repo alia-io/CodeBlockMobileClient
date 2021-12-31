@@ -1,13 +1,14 @@
-package com.example.codeblockmobileclient;
+package com.example.codeblockmobileclient.communication;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.Bundle;
+import android.app.Service;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
 import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
 
-import com.example.codeblockmobileclient.dto.MessageDTO;
+import androidx.annotation.Nullable;
+
+import com.example.codeblockmobileclient.communication.dto.MessageDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -17,21 +18,24 @@ import java.net.URISyntaxException;
 import lombok.SneakyThrows;
 import tech.gusavila92.websocketclient.WebSocketClient;
 
-public class ConnectClientActivity extends AppCompatActivity {
+public class SocketMessageService extends Service {
 
+    private final IBinder binder = new SocketMessageServiceBinder();    // Binder given to clients
     private WebSocketClient webSocketMessageClient;
-    private TextView tv;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_connect_client);
-        tv = findViewById(R.id.tv);
-        createWebSocketClient();
+    /**
+     * Class used for the client Binder.  Because we know this service always
+     * runs in the same process as its clients, we don't need to deal with IPC.
+     */
+    public class SocketMessageServiceBinder extends Binder {
+        SocketMessageService getService() {
+            // Return this instance of SocketMessageService so clients can call public methods
+            return SocketMessageService.this;
+        }
     }
 
-    private void createWebSocketClient() {
-
+    @Override
+    public void onCreate() {
         URI uri;
         try {
             // Connect to local host
@@ -55,16 +59,18 @@ public class ConnectClientActivity extends AppCompatActivity {
                 ObjectMapper mapper = new ObjectMapper();
                 MessageDTO messageDTO = mapper.readValue(message, MessageDTO.class);
                 Log.i("WebSocket", "Converted message body: " + messageDTO.getBody());
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try{
-                            tv.setText(messageDTO.getBody());
-                        } catch (Exception e){
-                            e.printStackTrace();
+                /*if (activity != null) {
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try{
+                                activity.receiveMessage(messageDTO);
+                            } catch (Exception e){
+                                e.printStackTrace();
+                            }
                         }
-                    }
-                });
+                    });
+                }*/
             }
 
             @Override public void onBinaryReceived(byte[] data) { }
@@ -84,11 +90,23 @@ public class ConnectClientActivity extends AppCompatActivity {
         webSocketMessageClient.connect();
     }
 
-    public void onClickSendMessage(View view) throws JsonProcessingException {
-        Log.i("WebSocket", "Button was clicked");
-        MessageDTO messageDTO = new MessageDTO(7, "HELLO CAN YOU HEAR ME (from MessageDTO)");
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        Log.i("SocketMessageService", "onBind");
+        return binder;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.i("SocketMessageService", "onDestroy");
+    }
+
+    /** method for clients */
+    public void sendMessage(MessageDTO message) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        String msg = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(messageDTO);
+        String msg = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message);
         webSocketMessageClient.send(msg);
     }
 }
