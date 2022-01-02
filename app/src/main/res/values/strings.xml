@@ -2,6 +2,7 @@
 
     <string name="app_name"><b>Code Block</b></string>
     <string name="socket_service_description">CodeBlock Messaging Service</string>
+    <string name="notification_manager">New Message</string>
 
     <!-- SignupLoginActivity -->
     <string name="signup">Create a new account:</string>

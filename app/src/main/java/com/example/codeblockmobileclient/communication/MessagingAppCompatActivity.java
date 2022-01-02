@@ -4,16 +4,25 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.codeblockmobileclient.communication.dto.MessageDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.SneakyThrows;
 
 public abstract class MessagingAppCompatActivity extends AppCompatActivity {
 
+    private MessagingAppCompatActivity activity;
     private SocketMessageService service;
+    private Messenger messenger = null;
     protected boolean bound = false;
 
     private ServiceConnection connection = new ServiceConnection() {
@@ -23,6 +32,7 @@ public abstract class MessagingAppCompatActivity extends AppCompatActivity {
             SocketMessageService.SocketMessageServiceBinder binder
                     = (SocketMessageService.SocketMessageServiceBinder) iBinder;
             service = binder.getService();
+            messenger = new Messenger(iBinder);
             bound = true;
         }
 
@@ -32,12 +42,26 @@ public abstract class MessagingAppCompatActivity extends AppCompatActivity {
         }
     };
 
+    public static class MessageHandler extends Handler {
+        private MessagingAppCompatActivity context;
+        MessageHandler(MessagingAppCompatActivity ctx) { context = ctx; }
+        @SneakyThrows
+        @Override
+        public void handleMessage(Message msg) {
+            Bundle bundle = msg.getData();
+            String jsonMessage = bundle.getString("json");
+            ObjectMapper mapper = new ObjectMapper();
+            MessageDTO messageDTO = mapper.readValue(jsonMessage, MessageDTO.class);
+            context.receiveMessage(messageDTO);
+        }
+    }
+
     public MessagingAppCompatActivity() { super(); }
 
     @Override
     protected void onStart() {
         super.onStart();
-        MessagingAppCompatActivity activity = getActivity();
+        activity = getActivity();
         if (activity instanceof ConnectClientActivity) {
             ConnectClientActivity currentActivity = (ConnectClientActivity) activity;
             Intent intent = new Intent(currentActivity, SocketMessageService.class);
