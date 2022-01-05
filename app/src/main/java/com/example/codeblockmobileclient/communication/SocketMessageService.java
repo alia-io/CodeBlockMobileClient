@@ -7,8 +7,14 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -20,15 +26,53 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 import lombok.SneakyThrows;
 import tech.gusavila92.websocketclient.WebSocketClient;
 
+// https://developer.android.com/guide/components/bound-services
+// https://android.googlesource.com/platform/development/+/master/samples/ApiDemos/src/com/example/android/apis/app/MessengerService.java
+// https://android.googlesource.com/platform/development/+/master/samples/ApiDemos/src/com/example/android/apis/app/MessengerServiceActivities.java
+
 public class SocketMessageService extends Service {
 
-    private final IBinder binder = new SocketMessageServiceBinder();    // Binder given to clients
     private WebSocketClient webSocketMessageClient;
     private NotificationManager notificationManager;
+    private final Messenger incomingMessenger = new Messenger(new SocketMessageHandler());
+    ArrayList<Messenger> clients = new ArrayList<Messenger>();
+
+    public static final int MSG_REGISTER_CLIENT = 1;
+    public static final int MSG_UNREGISTER_CLIENT = 2;
+    public static final int MSG_SEND_TO_SERVER = 3;
+
+    public WebSocketClient getWebSocketMessageClient() { return webSocketMessageClient; }
+
+    /**
+     * Handler of incoming messages from clients.
+     */
+    public class SocketMessageHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_REGISTER_CLIENT:
+                    clients.add(msg.replyTo);
+                    break;
+                case MSG_UNREGISTER_CLIENT:
+                    clients.remove(msg.replyTo);
+                    break;
+                case MSG_SEND_TO_SERVER:
+                    //Toast.makeText(applicationContext, "hello!", Toast.LENGTH_SHORT).show();
+                    Bundle bundle = msg.getData();
+                    String messageString = bundle.getString("jsonMsg");
+                    Log.i("Socket", "handleMessage, msg: " + messageString);
+                    webSocketMessageClient.send(messageString);
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
 
     /**
      * Class used for the client Binder.  Because we know this service always
@@ -45,6 +89,7 @@ public class SocketMessageService extends Service {
     public void onCreate() {
 
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        //showNotification(); // display notification about us starting
 
         URI uri;
         try {
@@ -66,25 +111,36 @@ public class SocketMessageService extends Service {
             @Override
             public void onTextReceived(String message) {
                 Log.i("WebSocket", "String message received: " + message);
-                ObjectMapper mapper = new ObjectMapper();
-                MessageDTO messageDTO = mapper.readValue(message, MessageDTO.class);
-                Log.i("WebSocket", "Converted message body: " + messageDTO.getBody());
-                Context ctx = getApplication().getApplicationContext();
-                Log.i("WebSocket", "context: " + ctx.getClass().getName());
-                if (ctx instanceof MessagingAppCompatActivity) {
-                    Log.i("WebSocket", "instanceof?");
-                    MessagingAppCompatActivity activity = (MessagingAppCompatActivity) ctx;
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                activity.receiveMessage(messageDTO);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+                for (int i = clients.size() - 1; i >= 0; i--) {
+                    try {
+                        Message msg = Message.obtain(null, 0, 0, 0);
+                        Bundle bundle = new Bundle();
+                        bundle.putString("jsonMsg", message);
+                        msg.setData(bundle);
+                        clients.get(i).send(msg);
+                    } catch (RemoteException e) {
+                        clients.remove(i);
+                    }
                 }
+                //ObjectMapper mapper = new ObjectMapper();
+                //MessageDTO messageDTO = mapper.readValue(message, MessageDTO.class);
+                //Log.i("WebSocket", "Converted message body: " + messageDTO.getBody());
+                //Context ctx = getApplication().getApplicationContext();
+                //Log.i("WebSocket", "context: " + ctx.getClass().getName());
+                //if (ctx instanceof MessagingAppCompatActivity) {
+                    //Log.i("WebSocket", "instanceof?");
+                    //MessagingAppCompatActivity activity = (MessagingAppCompatActivity) ctx;
+                    //activity.runOnUiThread(new Runnable() {
+                        //@Override
+                        //public void run() {
+                            //try {
+                                //activity.receiveMessage(messageDTO);
+                            //} catch (Exception e) {
+                                //e.printStackTrace();
+                            //}
+                        //}
+                    //});
+                //}
             }
 
             @Override public void onBinaryReceived(byte[] data) { }
@@ -114,7 +170,8 @@ public class SocketMessageService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.i("SocketMessageService", "onBind");
-        return binder;
+        Toast.makeText(getApplicationContext(), "binding", Toast.LENGTH_SHORT);
+        return incomingMessenger.getBinder();
     }
 
     @Override
