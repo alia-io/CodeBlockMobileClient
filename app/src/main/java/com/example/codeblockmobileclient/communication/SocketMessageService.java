@@ -101,6 +101,7 @@ public class SocketMessageService extends Service {
     private void startNotificationManager() {
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         //showNotification(); // display notification about us starting
+        // TODO: fix notifications, currently getting error.
     }
 
     /**
@@ -170,10 +171,10 @@ public class SocketMessageService extends Service {
 
         // Set the info for the views that show in the notification panel.
         Notification notification = new Notification.Builder(this)
-                //.setSmallIcon(R.drawable.stat_sample)  // the status icon
+                .setSmallIcon(R.drawable.test_notification)  // the status icon
                 .setTicker(text)  // the status text
                 .setWhen(System.currentTimeMillis())  // the time stamp
-                //.setContentTitle(getText(R.string.local_service_label))  // the label of the entry
+                .setContentTitle("New message")  // the label of the entry
                 .setContentText(text)  // the contents of the entry
                 .setContentIntent(contentIntent)  // The intent to send when the entry is clicked
                 .build();
