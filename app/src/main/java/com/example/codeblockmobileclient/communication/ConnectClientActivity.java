@@ -20,18 +20,19 @@ public class ConnectClientActivity extends MessagingAppCompatActivity {
         tv = findViewById(R.id.tv);
     }
 
-    @Override
+    @Override   // return ptr to this
     protected MessagingAppCompatActivity getActivity() {
         return ConnectClientActivity.this;
     }
 
+    // triggers on button click
     public void onClickSendMessage(View view) throws JsonProcessingException {
         Log.i("WebSocket", "Button was clicked");
-        MessageDTO messageDTO = new MessageDTO(7, "HELLO CAN YOU HEAR ME (from MessageDTO)");
+        MessageDTO messageDTO = new MessageDTO(7, "Test message");
         sendMessage(messageDTO);
     }
 
-    @Override
+    @Override   // overridden method from parent - set UI element to message body
     protected void receiveMessage(MessageDTO message) {
         tv.setText(message.getBody());
     }

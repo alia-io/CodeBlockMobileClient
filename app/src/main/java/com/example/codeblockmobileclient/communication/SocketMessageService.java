@@ -4,9 +4,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -14,15 +12,11 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.example.codeblockmobileclient.R;
 import com.example.codeblockmobileclient.SignupLoginActivity;
-import com.example.codeblockmobileclient.communication.dto.MessageDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -37,16 +31,42 @@ import tech.gusavila92.websocketclient.WebSocketClient;
 
 public class SocketMessageService extends Service {
 
-    private WebSocketClient webSocketMessageClient;
-    private NotificationManager notificationManager;
-    private final Messenger incomingMessenger = new Messenger(new SocketMessageHandler());
-    ArrayList<Messenger> clients = new ArrayList<Messenger>();
+    private WebSocketClient webSocketMessageClient;     // socket communication
+    private NotificationManager notificationManager;    // manages badges & notifications
+    private final Messenger incomingMessenger = new Messenger(new SocketMessageHandler());  // messenger with messages from user to send to server
+                                                                        // messages should go client(user)->service(this)->server(remote)
+    ArrayList<Messenger> clients = new ArrayList<Messenger>();  // list of messengers belonging to subscribed clients (activities)
+                                                                        // for messages that should go server(remote)->service(this)->client(user)
 
+    // service received message types
     public static final int MSG_REGISTER_CLIENT = 1;
     public static final int MSG_UNREGISTER_CLIENT = 2;
     public static final int MSG_SEND_TO_SERVER = 3;
 
-    public WebSocketClient getWebSocketMessageClient() { return webSocketMessageClient; }
+    @Override
+    public void onCreate() {
+        startNotificationManager();
+        startWebSocketClient();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;    // keep it open even when all clients unsubscribe
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        Log.i("SocketMessageService", "Binding service to subscriber");
+        return incomingMessenger.getBinder();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        notificationManager.cancel(R.string.notification_manager);
+        Log.i("SocketMessageService", "Destroying service");
+    }
 
     /**
      * Handler of incoming messages from clients.
@@ -55,18 +75,19 @@ public class SocketMessageService extends Service {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case MSG_REGISTER_CLIENT:
+                case MSG_REGISTER_CLIENT:   // register a new client
                     clients.add(msg.replyTo);
+                    Log.i("SocketMessageService", "Client registered to service");
                     break;
-                case MSG_UNREGISTER_CLIENT:
+                case MSG_UNREGISTER_CLIENT: // unregister client
                     clients.remove(msg.replyTo);
+                    Log.i("SocketMessageService", "Unregistered client from service");
                     break;
-                case MSG_SEND_TO_SERVER:
-                    //Toast.makeText(applicationContext, "hello!", Toast.LENGTH_SHORT).show();
-                    Bundle bundle = msg.getData();
-                    String messageString = bundle.getString("jsonMsg");
-                    Log.i("Socket", "handleMessage, msg: " + messageString);
-                    webSocketMessageClient.send(messageString);
+                case MSG_SEND_TO_SERVER:    // send a message to the server (remote)
+                    Bundle bundle = msg.getData();  // get bundled data from Message object
+                    String messageString = bundle.getString("jsonMsg"); // get JSON string from bundled data
+                    webSocketMessageClient.send(messageString); // send it
+                    Log.i("SocketMessageService", "Sending message to server:\n" + messageString);
                     break;
                 default:
                     super.handleMessage(msg);
@@ -75,26 +96,21 @@ public class SocketMessageService extends Service {
     }
 
     /**
-     * Class used for the client Binder.  Because we know this service always
-     * runs in the same process as its clients, we don't need to deal with IPC.
+     * Sets up notification manager to work when app is closed or minimized
      */
-    public class SocketMessageServiceBinder extends Binder {
-        SocketMessageService getService() {
-            // Return this instance of SocketMessageService so clients can call public methods
-            return SocketMessageService.this;
-        }
-    }
-
-    @Override
-    public void onCreate() {
-
+    private void startNotificationManager() {
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         //showNotification(); // display notification about us starting
+    }
+
+    /**
+     * Establishes socket connection to server
+     */
+    private void startWebSocketClient() {
 
         URI uri;
         try {
-            // Connect to local host
-            uri = new URI("ws://10.0.2.2:8080/websocket");
+            uri = new URI("ws://10.0.2.2:8080/websocket");  // Connect to localhost
         } catch (URISyntaxException e) {
             e.printStackTrace();
             return;
@@ -104,17 +120,17 @@ public class SocketMessageService extends Service {
 
             @Override
             public void onOpen() {
-                Log.i("WebSocket", "Session is starting");
+                Log.i("SocketMessageClient", "Starting web socket session");
             }
 
             @SneakyThrows
             @Override
             public void onTextReceived(String message) {
-                Log.i("WebSocket", "String message received: " + message);
-                for (int i = clients.size() - 1; i >= 0; i--) {
+                Log.i("SocketMessageClient", "Socket message received from server:\n" + message);
+                for (int i = clients.size() - 1; i >= 0; i--) { // broadcast received message to all clients
                     try {
-                        Message msg = Message.obtain(null, 0, 0, 0);
-                        Bundle bundle = new Bundle();
+                        Message msg = Message.obtain(null, 0);
+                        Bundle bundle = new Bundle();   // bundle stores message data
                         bundle.putString("jsonMsg", message);
                         msg.setData(bundle);
                         clients.get(i).send(msg);
@@ -122,36 +138,17 @@ public class SocketMessageService extends Service {
                         clients.remove(i);
                     }
                 }
-                //ObjectMapper mapper = new ObjectMapper();
-                //MessageDTO messageDTO = mapper.readValue(message, MessageDTO.class);
-                //Log.i("WebSocket", "Converted message body: " + messageDTO.getBody());
-                //Context ctx = getApplication().getApplicationContext();
-                //Log.i("WebSocket", "context: " + ctx.getClass().getName());
-                //if (ctx instanceof MessagingAppCompatActivity) {
-                    //Log.i("WebSocket", "instanceof?");
-                    //MessagingAppCompatActivity activity = (MessagingAppCompatActivity) ctx;
-                    //activity.runOnUiThread(new Runnable() {
-                        //@Override
-                        //public void run() {
-                            //try {
-                                //activity.receiveMessage(messageDTO);
-                            //} catch (Exception e) {
-                                //e.printStackTrace();
-                            //}
-                        //}
-                    //});
-                //}
+            }
+
+            @Override
+            public void onCloseReceived() {
+                Log.i("SocketMessageClient", "Closing web socket client");
             }
 
             @Override public void onBinaryReceived(byte[] data) { }
             @Override public void onPingReceived(byte[] data) { }
             @Override public void onPongReceived(byte[] data) { }
             @Override public void onException(Exception e) { }
-
-            @Override
-            public void onCloseReceived() {
-                Log.i("WebSocket", "Closed ");
-            }
         };
 
         webSocketMessageClient.setConnectTimeout(10000);
@@ -160,29 +157,8 @@ public class SocketMessageService extends Service {
         webSocketMessageClient.connect();
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i("SocketMessageService", "onStartCommand");
-        return START_STICKY;
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        Log.i("SocketMessageService", "onBind");
-        Toast.makeText(getApplicationContext(), "binding", Toast.LENGTH_SHORT);
-        return incomingMessenger.getBinder();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        notificationManager.cancel(R.string.notification_manager);
-        Log.i("SocketMessageService", "onDestroy");
-    }
-
     /**
-     * Show a notification while this service is running.
+     * Show notification while this service is running.
      */
     private void showNotification() {
         // In this sample, we'll use the same text for the ticker and the expanded notification
@@ -204,12 +180,5 @@ public class SocketMessageService extends Service {
 
         // Send the notification.
         notificationManager.notify(R.string.notification_manager, notification);
-    }
-
-    /** method for clients */
-    public void sendMessage(MessageDTO message) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        String msg = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message);
-        webSocketMessageClient.send(msg);
     }
 }

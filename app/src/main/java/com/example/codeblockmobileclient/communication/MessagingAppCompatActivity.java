@@ -11,7 +11,6 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,16 +19,45 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.SneakyThrows;
-import tech.gusavila92.websocketclient.WebSocketClient;
 
+/**
+ * Abstract activity to be inherited by any activity that needs to receive messages
+ * from the server through socket connection
+ */
 public abstract class MessagingAppCompatActivity extends AppCompatActivity {
 
-    private MessagingAppCompatActivity activity;
-    //private SocketMessageService service;
-
-    private Messenger serviceMessenger = null;
+    private MessagingAppCompatActivity activity;    // the current child activity ("this")
+    private Messenger serviceMessenger = null;      // messenger with messages from user to send to server
+                                            // messages should go client(this)->service(local)->server(remote)
     private Messenger activityMessenger = new Messenger(new ActivityMessageHandler());
-    protected boolean bound = false;
+                                                    // messenger for messages from server to client
+                                            // messages should go server(remote)->service(local)->client(this)
+    protected boolean bound = false;    // is activity currently bound to service
+
+    private ServiceConnection connection = new ServiceConnection() {    // the connection to the service
+
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder iBinder) {
+            serviceMessenger = new Messenger(iBinder);
+            Log.i("MessagingAppCompatActivity", "Service bound");
+            try {
+                Message message = Message.obtain(null, SocketMessageService.MSG_REGISTER_CLIENT);
+                message.replyTo = activityMessenger;    // send client messenger to service
+                serviceMessenger.send(message);
+                Log.i("MessagingAppCompatActivity", "Client subscribed");
+            } catch (RemoteException e) {
+                Log.i("MessagingAppCompatActivity", "RemoteException: " + e.getMessage());
+            }
+            bound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName className) {
+            serviceMessenger = null;
+            Log.i("MessagingAppCompatActivity", "Service disconnected");
+            bound = false;
+        }
+    };
 
     /**
      * Handler of incoming messages from clients.
@@ -38,68 +66,18 @@ public abstract class MessagingAppCompatActivity extends AppCompatActivity {
         @SneakyThrows
         @Override
         public void handleMessage(Message msg) {
-            //switch (msg.what) {
-                //case MSG_SAY_HELLO:
-                    //Toast.makeText(applicationContext, "hello!", Toast.LENGTH_SHORT).show();
-                    Bundle bundle = msg.getData();
-                    String messageString = bundle.getString("jsonMsg");
-                    Log.i("Socket", "handleMessage, msg: " + messageString);
-                    //webSocketClient.send(messageString);
-                    //break;
-                //default:
-                    //super.handleMessage(msg);
-            //}
+            Bundle bundle = msg.getData();
+            String messageString = bundle.getString("jsonMsg");
+            Log.i("MessagingAppCompatActivity", "Receiving message from service:\n" + messageString);
             ObjectMapper mapper = new ObjectMapper();
             MessageDTO messageDTO = mapper.readValue(messageString, MessageDTO.class);
-            Log.i("WebSocket", "Converted message body: " + messageDTO.getBody());
             receiveMessage(messageDTO);
         }
     }
 
-    private ServiceConnection connection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder iBinder) {
-            //SocketMessageService.SocketMessageServiceBinder binder
-            //        = (SocketMessageService.SocketMessageServiceBinder) iBinder;
-            //service = binder.getService();
-            //serviceMessenger = new Messenger(iBinder);
-            serviceMessenger = new Messenger(iBinder);
-            Log.i("Socket", "Service bound");
-            try {
-                Message message = Message.obtain(null, SocketMessageService.MSG_REGISTER_CLIENT);
-                message.replyTo = activityMessenger;
-                serviceMessenger.send(message);
-                Log.i("Socket", "Client subscribed");
-            } catch (RemoteException e) {
-                Log.i("Socket", "Error: " + e.getMessage());
-            }
-            bound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName className) {
-            serviceMessenger = null;
-            Log.i("Socket", "Service disconnected");
-            bound = false;
-        }
-    };
-
-    /*public static class MessageHandler extends Handler {
-        private MessagingAppCompatActivity context;
-        MessageHandler(MessagingAppCompatActivity ctx) { context = ctx; }
-        @SneakyThrows
-        @Override
-        public void handleMessage(Message msg) {
-            Bundle bundle = msg.getData();
-            String jsonMessage = bundle.getString("json");
-            ObjectMapper mapper = new ObjectMapper();
-            MessageDTO messageDTO = mapper.readValue(jsonMessage, MessageDTO.class);
-            context.receiveMessage(messageDTO);
-        }
-    }*/
-
-    public MessagingAppCompatActivity() { super(); }
+    public MessagingAppCompatActivity() {
+        super();
+    }
 
     @Override
     protected void onStart() {
@@ -108,12 +86,33 @@ public abstract class MessagingAppCompatActivity extends AppCompatActivity {
         bindSocketMessageService();
     }
 
+    // get the child activity (for some reason "this" sometimes returns a ptr to THIS abstract parent class)
+    protected abstract MessagingAppCompatActivity getActivity();
+
+    protected abstract void receiveMessage(MessageDTO message); // action taken when a message is received
+
+    protected void sendMessage(MessageDTO message) throws JsonProcessingException {
+        if (!bound) return;
+        Message msg = Message.obtain(null, SocketMessageService.MSG_SEND_TO_SERVER); // message type = send to server
+        Bundle bundle = new Bundle();   // bundle to carry JSON string
+        ObjectMapper mapper = new ObjectMapper();
+        bundle.putString("jsonMsg", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message));
+        msg.setData(bundle);    // add bundle to Message object
+        Log.i("MessagingAppCompatActivity", "Sending message to service");
+        try {
+            serviceMessenger.send(msg); // send it
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            Log.i("MessagingAppCompatActivity", "RemoteException: " + e.getMessage());
+        }
+    }
+
     protected void bindSocketMessageService() {
         if (!bound && activity instanceof ConnectClientActivity) {
             ConnectClientActivity currentActivity = (ConnectClientActivity) activity;
             Intent intent = new Intent(currentActivity, SocketMessageService.class);
             bindService(intent, connection, Context.BIND_AUTO_CREATE);
-            Log.i("Socket", "Bind Service Complete");
+            Log.i("MessagingAppCompatActivity", "Binding service");
         }
     }
 
@@ -121,31 +120,14 @@ public abstract class MessagingAppCompatActivity extends AppCompatActivity {
         if (bound && serviceMessenger != null) {
             try {
                 Message message = Message.obtain(null, SocketMessageService.MSG_UNREGISTER_CLIENT);
-                message.replyTo = activityMessenger;
+                message.replyTo = activityMessenger;    // send client messenger to service
+                Log.i("MessagingAppCompatActivity", "Sending unregister message to service");
                 serviceMessenger.send(message);
             } catch (RemoteException e) {
-                Log.i("Socket", "Error: " + e.getMessage());
+                Log.i("MessagingAppCompatActivity", "RemoteException: " + e.getMessage());
             }
             unbindService(connection);
-            Log.i("Socket", "Unbind Service Complete");
-        }
-    }
-
-    protected abstract MessagingAppCompatActivity getActivity();
-    protected abstract void receiveMessage(MessageDTO message);
-
-    protected void sendMessage(MessageDTO message) throws JsonProcessingException {
-        //if (bound) service.sendMessage(message);
-        if (!bound) return;
-        Message msg = Message.obtain(null, SocketMessageService.MSG_SEND_TO_SERVER);
-        Bundle bundle = new Bundle();
-        ObjectMapper mapper = new ObjectMapper();
-        bundle.putString("jsonMsg", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(message));
-        msg.setData(bundle);
-        try {
-            serviceMessenger.send(msg);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+            Log.i("MessagingAppCompatActivity", "Unbinding service");
         }
     }
 }
