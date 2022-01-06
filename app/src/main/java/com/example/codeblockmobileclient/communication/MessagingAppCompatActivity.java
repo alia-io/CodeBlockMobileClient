@@ -21,8 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 
 /**
- * Abstract activity to be inherited by any activity that needs to receive messages
- * from the server through socket connection
+ * Abstract activity to be inherited by any activity that needs to send and receive
+ * messages from the server through socket connection
  */
 public abstract class MessagingAppCompatActivity extends AppCompatActivity {
 
@@ -60,7 +60,7 @@ public abstract class MessagingAppCompatActivity extends AppCompatActivity {
     };
 
     /**
-     * Handler of incoming messages from clients.
+     * Handler of incoming messages to clients.
      */
     public class ActivityMessageHandler extends Handler {
         @SneakyThrows

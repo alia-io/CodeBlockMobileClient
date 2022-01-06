@@ -20,7 +20,7 @@ public class ConnectClientActivity extends MessagingAppCompatActivity {
         tv = findViewById(R.id.tv);
     }
 
-    @Override   // return ptr to this
+    @Override   // return pointer to this
     protected MessagingAppCompatActivity getActivity() {
         return ConnectClientActivity.this;
     }
