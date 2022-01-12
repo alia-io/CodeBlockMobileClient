@@ -37,6 +37,11 @@ public class SignupLoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup_login);
+        findViews();
+        setToLogin();
+    }
+
+    private void findViews() {
         instructionView = findViewById(R.id.instruction);
         errorView = findViewById(R.id.error_text);
         confirmPasswordLayout = findViewById(R.id.confirm_password_layout);
@@ -46,7 +51,6 @@ public class SignupLoginActivity extends AppCompatActivity {
         submitButton = findViewById(R.id.signup_login_button);
         toggleView = findViewById(R.id.toggle_text);
         toggleButton = findViewById(R.id.toggle_button);
-        setToLogin();
     }
 
     private void setToSignup() {
