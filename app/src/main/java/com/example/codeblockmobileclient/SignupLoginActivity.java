@@ -213,9 +213,10 @@ public class SignupLoginActivity extends AppCompatActivity {
             httpConnection.setRequestMethod("POST");
             httpConnection.addRequestProperty("content-type", "application/json");
             httpConnection.setChunkedStreamingMode(0);
-            OutputStream out = httpConnection.getOutputStream();
-            OutputStreamWriter outStream = new OutputStreamWriter(out);
-            outStream.write(jsonObject.toString());
+            try(OutputStream os = httpConnection.getOutputStream()) {
+                byte[] input = jsonObject.toString().getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
             Log.i("HttpPostRequest", "Sending post\n:" + jsonObject.toString());
             if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 InputStream inStream = httpConnection.getInputStream();
