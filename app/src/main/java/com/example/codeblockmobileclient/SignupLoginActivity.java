@@ -166,24 +166,6 @@ public class SignupLoginActivity extends AppCompatActivity {
             }
 
             sendHttpPostRequest("login", loginRequestObj);
-            //sendHttpGetRequest();
-
-            /*Executor executor = Executors.newSingleThreadExecutor();
-            Handler handler = new Handler(Looper.getMainLooper());    // use for UI stuff
-
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    //sendHttpGetRequest();   // background work
-                    sendHttpPostRequest("login", loginRequestObj);
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            // UI thread work here
-                        }
-                    });
-                }
-            });*/
         }
     }
 
@@ -224,11 +206,15 @@ public class SignupLoginActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.i("Volley", "Response:\n" + response);
+                        errorView.setText("Response received");
+                        errorView.setVisibility(View.VISIBLE);
                     }
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.i("Volley", "Error: " + error);
+                        errorView.setText("HTTP POST Error");
+                        errorView.setVisibility(View.VISIBLE);
                     }
                 });
 
