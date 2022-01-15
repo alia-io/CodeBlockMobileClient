@@ -17,6 +17,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.example.codeblockmobileclient.communication.dto.AuthPacket;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -149,9 +157,10 @@ public class SignupLoginActivity extends AppCompatActivity {
             } catch (Exception e) {
                 Log.i("SignupLoginActivity", "JSONObject error");
                 e.printStackTrace();
-                // TODO: display error message
+                // TODO: display error message in UI
                 throw new Exception("JSONObject error");
             }
+
             //sendHttpPostRequest("login", loginRequestObj);
             //sendHttpGetRequest();
 
@@ -202,7 +211,90 @@ public class SignupLoginActivity extends AppCompatActivity {
 
     private Boolean sendHttpPostRequest(String urlExt, JSONObject jsonObject) {
 
+        /*try {
+            RequestQueue requestQueue = Volley.newRequestQueue(this);
+            String URL = "http://...";
+            JSONObject jsonBody = new JSONObject();
+            jsonBody.put("Title", "Android Volley Demo");
+            jsonBody.put("Author", "BNK");
+            final String requestBody = jsonBody.toString();
+
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    Log.i("VOLLEY", response);
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e("VOLLEY", error.toString());
+                }
+            }) {
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
+
+                @Override
+                public byte[] getBody() throws AuthFailureError {
+                    try {
+                        return requestBody == null ? null : requestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                        return null;
+                    }
+                }
+
+                @Override
+                protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                    String responseString = "";
+                    if (response != null) {
+                        responseString = String.valueOf(response.statusCode);
+                        // can get more details such as response.headers
+                    }
+                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+                }
+            };
+
+            requestQueue.add(stringRequest);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }*/
+
+        
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+        Boolean result = false;
         String urlString = "http://10.0.2.2:8080/" + urlExt;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, urlString, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+
+        Request<AuthPacket> request = new Request<AuthPacket>(Request.Method.POST, urlString, null) {
+            @Override
+            protected Response<AuthPacket> parseNetworkResponse(NetworkResponse response) {
+                return null;
+            }
+
+            @Override
+            protected void deliverResponse(AuthPacket response) {
+
+            }
+        };
+
+
+
+
+        /*String urlString = "http://10.0.2.2:8080/" + urlExt;
         Boolean result = false;
         HttpURLConnection httpConnection = null;
 
@@ -212,12 +304,20 @@ public class SignupLoginActivity extends AppCompatActivity {
             httpConnection.setDoOutput(true);
             httpConnection.setRequestMethod("POST");
             httpConnection.addRequestProperty("content-type", "application/json");
+            //httpConnection.setFixedLengthStreamingMode(jsonObject.length());
             httpConnection.setChunkedStreamingMode(0);
+<<<<<<< HEAD
             try(OutputStream os = httpConnection.getOutputStream()) {
                 byte[] input = jsonObject.toString().getBytes("utf-8");
                 os.write(input, 0, input.length);
             }
             Log.i("HttpPostRequest", "Sending post\n:" + jsonObject.toString());
+=======
+            OutputStream out = httpConnection.getOutputStream();
+            OutputStreamWriter outStream = new OutputStreamWriter(out);
+            outStream.write(jsonObject.toString());
+            Log.i("HttpPostRequest", "Sending post:\n" + jsonObject.toString());
+>>>>>>> add volley
             if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 InputStream inStream = httpConnection.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
@@ -236,7 +336,7 @@ public class SignupLoginActivity extends AppCompatActivity {
             Log.i("HttpPostRequest", "Exception in sendHttpPostRequest");
             e.printStackTrace();
             result = false;
-        }
+        }*/
 
         return result;
     }
