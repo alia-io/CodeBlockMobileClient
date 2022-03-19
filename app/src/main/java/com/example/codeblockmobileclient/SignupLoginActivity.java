@@ -143,7 +143,7 @@ public class SignupLoginActivity extends AppCompatActivity {
 
         String email = emailInput.getText().toString();
         String password = passwordInput.getText().toString();
-
+// test
         if (currentOption == ActivityOption.SIGNUP) {
             String confirmPassword = passwordInput.getText().toString();
             if (password.equals(confirmPassword)) {
