@@ -70,7 +70,12 @@ public abstract class MessagingAppCompatActivity extends AppCompatActivity {
             String messageString = bundle.getString("jsonMsg");
             Log.i("MessagingAppCompatActivity", "Receiving message from service:\n" + messageString);
             ObjectMapper mapper = new ObjectMapper();
-            MessageDTO messageDTO = mapper.readValue(messageString, MessageDTO.class);
+            MessageDTO messageDTO = null;
+            try {
+                messageDTO = mapper.readValue(messageString, MessageDTO.class);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
             receiveMessage(messageDTO);
         }
     }

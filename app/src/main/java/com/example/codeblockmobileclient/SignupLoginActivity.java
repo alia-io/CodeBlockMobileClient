@@ -4,10 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import android.graphics.Typeface;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -17,18 +14,19 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.codeblockmobileclient.communication.dto.AuthPacket;
-import com.example.codeblockmobileclient.communication.dto.LoginForm;
+import com.example.codeblockmobileclient.communication.dto.PublicKeyDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.crypto.tink.HybridEncrypt;
+import com.google.crypto.tink.KeysetHandle;
+import com.google.crypto.tink.hybrid.HybridConfig;
 
 import org.json.JSONObject;
 
@@ -36,17 +34,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
-import at.favre.lib.crypto.bcrypt.BCrypt;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.util.Base64;
 
 public class SignupLoginActivity extends AppCompatActivity {
 
@@ -65,12 +57,27 @@ public class SignupLoginActivity extends AppCompatActivity {
     private TextView toggleView;
     private Button toggleButton;
 
+    private RequestQueue requestQueue;
+    private KeysetHandle keysetHandle;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup_login);
+        requestQueue = Volley.newRequestQueue(this);
         findViews();
         setToLogin();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        try {
+            HybridConfig.register();
+        } catch (GeneralSecurityException e) {
+            e.printStackTrace();
+        }
+        sendHttpGetRequest("public_key", null);
     }
 
     private void findViews() {
@@ -141,9 +148,11 @@ public class SignupLoginActivity extends AppCompatActivity {
 
     public void onClickSubmit(View view) throws Exception {
 
+        Log.i("Volley", "onClick: keysetHandle = " + keysetHandle);
+
         String email = emailInput.getText().toString();
         String password = passwordInput.getText().toString();
-// test
+
         if (currentOption == ActivityOption.SIGNUP) {
             String confirmPassword = passwordInput.getText().toString();
             if (password.equals(confirmPassword)) {
@@ -153,11 +162,14 @@ public class SignupLoginActivity extends AppCompatActivity {
                 errorView.setVisibility(View.VISIBLE);
             }
         } else if (currentOption == ActivityOption.LOGIN) {
-            String pwHash = BCrypt.withDefaults().hashToString(10, password.toCharArray());
+            HybridEncrypt hybridEncrypt = keysetHandle.getPrimitive(HybridEncrypt.class);
+            Log.i("Volley", "hybridEncrypt = " + hybridEncrypt);
+            String encryptedPass = Base64.getEncoder().encodeToString(
+                    hybridEncrypt.encrypt(password.getBytes(StandardCharsets.UTF_8), null));
             JSONObject loginRequestObj = new JSONObject();
             try {
                 loginRequestObj.put("email", email);
-                loginRequestObj.put("password", pwHash);
+                loginRequestObj.put("password", encryptedPass);
             } catch (Exception e) {
                 Log.i("SignupLoginActivity", "JSONObject error");
                 e.printStackTrace();
@@ -195,11 +207,45 @@ public class SignupLoginActivity extends AppCompatActivity {
         }
     }
 
+    private void sendHttpGetRequest(String urlExt, JSONObject jsonObject) {
+
+        String url = "http://10.0.2.2:8080/" + urlExt;
+        Log.i("Volley", "GET request");
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        Log.i("Volley", "Response:\n" + response);
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        try {
+                            PublicKeyDTO publicKeyDTO = objectMapper.readValue(response.toString(), PublicKeyDTO.class);
+                            keysetHandle = publicKeyDTO.getPublicKeySetHandle();
+                            Log.i("Volley", "publicKeySetHandle = " + keysetHandle);
+                        } catch (GeneralSecurityException | IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                        Log.i("Volley", "Error: " + error);
+                        errorView.setText("HTTP GET Error");
+                        errorView.setVisibility(View.VISIBLE);
+
+                    }
+                });
+
+        requestQueue.add(request);
+    }
+
+    // TODO: Use a DTO object instead of a JSON object: https://medium.com/@dcortes22/android-how-to-use-intelligently-volley-a7787fb8295a
     private void sendHttpPostRequest(String urlExt, JSONObject jsonObject) {
 
-        RequestQueue queue = Volley.newRequestQueue(this);
         String url = "http://10.0.2.2:8080/" + urlExt;
-        Log.i("Volley", "test");
+        Log.i("Volley", "POST request");
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
                 new Response.Listener<JSONObject>() {
@@ -218,7 +264,7 @@ public class SignupLoginActivity extends AppCompatActivity {
                     }
                 });
 
-        queue.add(request);
+        requestQueue.add(request);
     }
 }
 
