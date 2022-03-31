@@ -77,7 +77,7 @@ public class SignupLoginActivity extends AppCompatActivity {
         } catch (GeneralSecurityException e) {
             e.printStackTrace();
         }
-        sendHttpGetRequest("public_key", null);
+        sendHttpGetRequest("api/auth/public_key", null);
     }
 
     private void findViews() {
