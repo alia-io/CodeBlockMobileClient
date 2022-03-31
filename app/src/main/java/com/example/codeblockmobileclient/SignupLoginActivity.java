@@ -177,7 +177,7 @@ public class SignupLoginActivity extends AppCompatActivity {
                 throw new Exception("JSONObject error");
             }
 
-            sendHttpPostRequest("login", loginRequestObj);
+            sendHttpPostRequest("api/auth/login", loginRequestObj);
         }
     }
 
