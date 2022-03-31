@@ -20,6 +20,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.codeblockmobileclient.communication.HttpRequest;
+import com.example.codeblockmobileclient.communication.dto.AuthPacket;
+import com.example.codeblockmobileclient.communication.dto.LoginForm;
 import com.example.codeblockmobileclient.communication.dto.PublicKeyDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.material.textfield.TextInputEditText;
@@ -166,6 +169,14 @@ public class SignupLoginActivity extends AppCompatActivity {
             Log.i("Volley", "hybridEncrypt = " + hybridEncrypt);
             String encryptedPass = Base64.getEncoder().encodeToString(
                     hybridEncrypt.encrypt(password.getBytes(StandardCharsets.UTF_8), null));
+
+
+
+            // LoginForm loginForm = new LoginForm(email, encryptedPass);
+
+            // HttpRequest<LoginForm> postRequest = new HttpRequest<>(Request.Method.POST, )
+
+
             JSONObject loginRequestObj = new JSONObject();
             try {
                 loginRequestObj.put("email", email);
@@ -181,62 +192,56 @@ public class SignupLoginActivity extends AppCompatActivity {
         }
     }
 
-    private void sendHttpGetRequest() {
-        try {
-            URL url = new URL("https://dog.ceo/api/breeds/image/random");
-            HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
-            if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                InputStream inStream = httpConnection.getInputStream();
-                if (inStream != null) {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        Log.d("HttpPostRequest", "line: " + line);
-                    }
-                    reader.close();
-                    try {
-                        inStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            httpConnection.disconnect();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
     private void sendHttpGetRequest(String urlExt, JSONObject jsonObject) {
 
         String url = "http://10.0.2.2:8080/" + urlExt;
         Log.i("Volley", "GET request");
 
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, jsonObject,
-                new Response.Listener<JSONObject>() {
+        HttpRequest request = new HttpRequest(Request.Method.GET, url, null, PublicKeyDTO.class,
+                new Response.Listener<PublicKeyDTO>() {
                     @Override
-                    public void onResponse(JSONObject response) {
-
+                    public void onResponse(PublicKeyDTO response) {
                         Log.i("Volley", "Response:\n" + response);
-                        ObjectMapper objectMapper = new ObjectMapper();
                         try {
-                            PublicKeyDTO publicKeyDTO = objectMapper.readValue(response.toString(), PublicKeyDTO.class);
-                            keysetHandle = publicKeyDTO.getPublicKeySetHandle();
-                            Log.i("Volley", "publicKeySetHandle = " + keysetHandle);
-                        } catch (GeneralSecurityException | IOException e) {
+                            keysetHandle = response.getPublicKeySetHandle();
+                        } catch (IOException | GeneralSecurityException e) {
                             e.printStackTrace();
                         }
                     }
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-
                         Log.i("Volley", "Error: " + error);
                         errorView.setText("HTTP GET Error");
                         errorView.setVisibility(View.VISIBLE);
-
                     }
                 });
+
+//        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, jsonObject,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//
+//                        Log.i("Volley", "Response:\n" + response);
+//                        ObjectMapper objectMapper = new ObjectMapper();
+//                        try {
+//                            PublicKeyDTO publicKeyDTO = objectMapper.readValue(response.toString(), PublicKeyDTO.class);
+//                            keysetHandle = publicKeyDTO.getPublicKeySetHandle();
+//                            Log.i("Volley", "publicKeySetHandle = " + keysetHandle);
+//                        } catch (GeneralSecurityException | IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }, new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//
+//                        Log.i("Volley", "Error: " + error);
+//                        errorView.setText("HTTP GET Error");
+//                        errorView.setVisibility(View.VISIBLE);
+//
+//                    }
+//                });
 
         requestQueue.add(request);
     }
