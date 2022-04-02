@@ -18,8 +18,6 @@ import com.example.codeblockmobileclient.communication.dto.MessageDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.SneakyThrows;
-
 /**
  * Abstract activity to be inherited by any activity that needs to send and receive
  * messages from the server through socket connection
@@ -63,7 +61,6 @@ public abstract class MessagingAppCompatActivity extends AppCompatActivity {
      * Handler of incoming messages to clients.
      */
     public class ActivityMessageHandler extends Handler {
-        @SneakyThrows
         @Override
         public void handleMessage(Message msg) {
             Bundle bundle = msg.getData();

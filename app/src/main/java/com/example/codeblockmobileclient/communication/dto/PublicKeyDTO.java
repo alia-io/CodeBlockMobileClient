@@ -8,9 +8,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
-import lombok.Data;
-
-@Data
 public class PublicKeyDTO {
 
     private byte[] encodedPublicKeySetHandle;
@@ -18,5 +15,13 @@ public class PublicKeyDTO {
     public KeysetHandle getPublicKeySetHandle() throws IOException, GeneralSecurityException {
         ByteArrayInputStream is = new ByteArrayInputStream(encodedPublicKeySetHandle);
         return CleartextKeysetHandle.read(JsonKeysetReader.withInputStream(is));
+    }
+
+    public byte[] getEncodedPublicKeySetHandle() {
+        return encodedPublicKeySetHandle;
+    }
+
+    public void setEncodedPublicKeySetHandle(byte[] encodedPublicKeySetHandle) {
+        this.encodedPublicKeySetHandle = encodedPublicKeySetHandle;
     }
 }

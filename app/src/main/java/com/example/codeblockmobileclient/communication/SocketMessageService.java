@@ -22,7 +22,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
-import lombok.SneakyThrows;
 import tech.gusavila92.websocketclient.WebSocketClient;
 
 // https://developer.android.com/guide/components/bound-services
@@ -124,7 +123,6 @@ public class SocketMessageService extends Service {
                 Log.i("SocketMessageClient", "Starting web socket session");
             }
 
-            @SneakyThrows
             @Override
             public void onTextReceived(String message) {
                 Log.i("SocketMessageClient", "Socket message received from server:\n" + message);
